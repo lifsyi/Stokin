@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>StokWarung - Inventaris & Logistik UMKM</title>
+  <title>Stokin - Inventaris & Logistik UMKM</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#00AED6" />
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" />
@@ -24,7 +24,7 @@
       <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xl shadow-sky-900/5">
         <div class="text-center mb-6">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl gopay-gradient text-white text-3xl mb-3 shadow-lg shadow-sky-500/30">🏪</div>
-          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">StokWarung</h1>
+          <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Stokin</h1>
           <p class="text-xs text-gray-500 mt-1">Kelola stok masuk & keluar khusus warung Anda</p>
         </div>
 
@@ -58,7 +58,7 @@
         <div class="flex justify-between items-start">
           <div>
             <span class="inline-block text-[10px] uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-white font-bold">Warung Aktif</span>
-            <h1 id="label-nama-warung" class="text-xl font-extrabold tracking-tight mt-1">StokWarung</h1>
+            <h1 id="label-nama-warung" class="text-xl font-extrabold tracking-tight mt-1">Stokin</h1>
             <p id="label-email-warung" class="text-[11px] text-sky-100">-</p>
           </div>
           <div class="flex gap-1.5">
@@ -73,7 +73,7 @@
             <p id="stat-jenis" class="text-2xl font-extrabold mt-0.5">0</p>
           </div>
           <div class="gopay-card-glass p-3.5 rounded-2xl">
-            <p class="text-[11px] text-sky-50 font-medium">Total Stok (Pcs)</p>
+            <p class="text-[11px] text-sky-50 font-medium">Total Unit Stok</p>
             <p id="stat-unit" class="text-2xl font-extrabold mt-0.5">0</p>
           </div>
         </div>
@@ -113,24 +113,46 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">Jumlah</label>
-                <input type="number" id="input-jumlah" min="1" oninput="hitungTotalPcs()" required placeholder="0" class="w-full border border-gray-200 bg-gray-50/70 rounded-2xl px-3.5 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-[#00AED6]">
+                <input type="number" id="input-jumlah" min="1" oninput="hitungTotalSatuan()" required placeholder="0" class="w-full border border-gray-200 bg-gray-50/70 rounded-2xl px-3.5 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-[#00AED6]">
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1">Satuan</label>
-                <select id="input-satuan" onchange="toggleIsiDus()" class="w-full border border-gray-200 bg-gray-50/70 rounded-2xl px-3 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-[#00AED6]">
-                  <option value="Pcs">Pcs / Satuan</option>
-                  <option value="Dus">Dus</option>
+                <select id="input-satuan" onchange="toggleKonversiGrosir()" class="w-full border border-gray-200 bg-gray-50/70 rounded-2xl px-3 py-2.5 text-sm focus:bg-white focus:outline-none focus:border-[#00AED6]">
+                  <optgroup label="Satuan Eceran / Dasar">
+                    <option value="Pcs">Pcs</option>
+                    <option value="Botol">Botol</option>
+                    <option value="Sachet">Sachet</option>
+                    <option value="Bungkus">Bungkus</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Liter">Liter</option>
+                  </optgroup>
+                  <optgroup label="Satuan Grosir (Bisa Diisi Isinya)">
+                    <option value="Dus">Dus</option>
+                    <option value="Pak">Pak / Renteng</option>
+                    <option value="Karung">Karung</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
 
-            <div id="grup-isi-dus" class="hidden bg-sky-50 border border-sky-200 p-3.5 rounded-2xl space-y-2">
+            <!-- Kolom Konversi Jika Memilih Satuan Grosir (Dus / Pak / Karung) -->
+            <div id="grup-isi-grosir" class="hidden bg-sky-50 border border-sky-200 p-3.5 rounded-2xl space-y-2.5">
               <div class="flex justify-between items-center">
-                <label class="block text-xs font-bold text-sky-900">1 Dus berisi berapa Pcs?</label>
-                <span id="preview-total-pcs" class="text-xs font-extrabold text-[#0077C8] bg-white px-2.5 py-0.5 rounded-full border border-sky-200">Total: 0 Pcs</span>
+                <label id="label-isi-grosir" class="block text-xs font-bold text-sky-900">1 Dus berisi berapa?</label>
+                <span id="preview-total-dasar" class="text-xs font-extrabold text-[#0077C8] bg-white px-2.5 py-0.5 rounded-full border border-sky-200">Total: 0 Pcs</span>
               </div>
-              <input type="number" id="input-isi-dus" min="1" value="1" oninput="hitungTotalPcs()" placeholder="Contoh: 24 atau 40" class="w-full border border-sky-300 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#00AED6]">
-              <p class="text-[11px] text-sky-700">Sistem otomatis mengonversi stok ke satuan Pcs agar akurat saat dijual eceran.</p>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="number" id="input-isi-grosir" min="1" value="12" oninput="hitungTotalSatuan()" placeholder="Isi (misal: 24)" class="w-full border border-sky-300 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#00AED6]">
+                <select id="input-satuan-dasar" onchange="hitungTotalSatuan()" class="w-full border border-sky-300 rounded-xl px-2.5 py-2 text-sm bg-white focus:outline-none focus:border-[#00AED6]">
+                  <option value="Pcs">Pcs</option>
+                  <option value="Botol">Botol</option>
+                  <option value="Sachet">Sachet</option>
+                  <option value="Bungkus">Bungkus</option>
+                  <option value="Kg">Kg</option>
+                  <option value="Liter">Liter</option>
+                </select>
+              </div>
+              <p class="text-[11px] text-sky-700">Stok otomatis dikonversi ke satuan eceran agar akurat saat dikeluarkan.</p>
             </div>
 
             <div id="grup-distributor">
@@ -187,45 +209,57 @@
     const SUPABASE_KEY = 'sb_publishable_dswCYxrsRlxnavhsvARqXA_iWfKASzY';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const SATUAN_GROSIR = ['Dus', 'Pak', 'Karung'];
     let authMode = 'LOGIN';
     let currentUser = null;
     let dataBarang = [];
     let dataRiwayat = [];
     let modeSaatIni = 'MASUK';
-    let editTransaksiData = null; // Menyimpan objek transaksi jika sedang mode Edit
+    let editTransaksiData = null;
 
     document.getElementById('input-tanggal').valueAsDate = new Date();
 
-    function toggleIsiDus() {
+    function toggleKonversiGrosir() {
       const satuan = document.getElementById('input-satuan').value;
-      const grupDus = document.getElementById('grup-isi-dus');
-      const inputIsiDus = document.getElementById('input-isi-dus');
-      if (satuan === 'Dus') {
-        grupDus.classList.remove('hidden');
-        inputIsiDus.required = true;
-        if (parseInt(inputIsiDus.value) <= 1) inputIsiDus.value = 12;
-        hitungTotalPcs();
+      const grupGrosir = document.getElementById('grup-isi-grosir');
+      const inputIsi = document.getElementById('input-isi-grosir');
+      const labelGrosir = document.getElementById('label-isi-grosir');
+
+      if (SATUAN_GROSIR.includes(satuan)) {
+        grupGrosir.classList.remove('hidden');
+        inputIsi.required = true;
+        labelGrosir.innerText = `1 ${satuan} berisi berapa?`;
+        if (parseInt(inputIsi.value) <= 1) inputIsi.value = 12;
+        hitungTotalSatuan();
       } else {
-        grupDus.classList.add('hidden');
-        inputIsiDus.required = false;
+        grupGrosir.classList.add('hidden');
+        inputIsi.required = false;
       }
     }
 
-    function hitungTotalPcs() {
+    function hitungTotalSatuan() {
       const jumlah = parseInt(document.getElementById('input-jumlah').value) || 0;
       const satuan = document.getElementById('input-satuan').value;
-      const isiDus = parseInt(document.getElementById('input-isi-dus').value) || 1;
-      const total = satuan === 'Dus' ? (jumlah * isiDus) : jumlah;
-      document.getElementById('preview-total-pcs').innerText = `Total: ${total} Pcs`;
+      const isi = parseInt(document.getElementById('input-isi-grosir').value) || 1;
+      const satuanDasar = document.getElementById('input-satuan-dasar').value;
+      const total = SATUAN_GROSIR.includes(satuan) ? (jumlah * isi) : jumlah;
+      document.getElementById('preview-total-dasar').innerText = `Total: ${total} ${satuanDasar}`;
       return total;
     }
 
     function cekBarangOtomatis() {
       const nama = document.getElementById('input-nama').value.trim().toLowerCase();
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === nama);
-      if (barangAda && barangAda.isi_per_dus > 1) {
-        document.getElementById('input-isi-dus').value = barangAda.isi_per_dus;
-        hitungTotalPcs();
+      if (barangAda) {
+        // Jika barang sudah pernah dicatat, sesuaikan satuan dasarnya otomatis
+        if (!SATUAN_GROSIR.includes(document.getElementById('input-satuan').value)) {
+          document.getElementById('input-satuan').value = barangAda.satuan || 'Pcs';
+        }
+        document.getElementById('input-satuan-dasar').value = barangAda.satuan || 'Pcs';
+        if (barangAda.isi_per_dus > 1) {
+          document.getElementById('input-isi-grosir').value = barangAda.isi_per_dus;
+        }
+        hitungTotalSatuan();
       }
     }
 
@@ -368,23 +402,24 @@
       }
 
       container.innerHTML = list.map(item => {
-        const isiDus = item.isi_per_dus || 1;
-        let infoDus = '';
-        if (isiDus > 1 && item.stok_saat_ini >= isiDus) {
-          const jmlDus = Math.floor(item.stok_saat_ini / isiDus);
-          const sisaPcs = item.stok_saat_ini % isiDus;
-          infoDus = `<p class="text-[11px] text-[#0088D1] font-semibold mt-0.5">≈ ${jmlDus} Dus${sisaPcs > 0 ? ` + ${sisaPcs} Pcs` : ''} (@${isiDus} Pcs/Dus)</p>`;
+        const satuanAsli = item.satuan || 'Pcs';
+        const isiGrosir = item.isi_per_dus || 1;
+        let infoGrosir = '';
+        if (isiGrosir > 1 && item.stok_saat_ini >= isiGrosir) {
+          const jmlPaket = Math.floor(item.stok_saat_ini / isiGrosir);
+          const sisaEcer = item.stok_saat_ini % isiGrosir;
+          infoGrosir = `<p class="text-[11px] text-[#0088D1] font-semibold mt-0.5">≈ ${jmlPaket} Dus/Pak${sisaEcer > 0 ? ` + ${sisaEcer} ${satuanAsli}` : ''} (@${isiGrosir} ${satuanAsli})</p>`;
         }
         return `
           <div class="bg-white border border-gray-100 rounded-2xl p-4 flex justify-between items-center shadow-sm">
             <div>
               <h3 class="font-bold text-gray-800 text-sm">${item.nama_barang}</h3>
-              ${infoDus}
+              ${infoGrosir}
               <p class="text-[11px] text-gray-400 mt-0.5">Update: ${new Date(item.updated_at).toLocaleDateString('id-ID')}</p>
             </div>
             <div class="text-right">
               <p class="text-[10px] text-gray-400 mb-1">Stok Terakhir</p>
-              <span class="px-3.5 py-1 rounded-full text-xs font-extrabold ${item.stok_saat_ini <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-sky-50 text-[#0088D1] border border-sky-200'}">${item.stok_saat_ini} Pcs</span>
+              <span class="px-3.5 py-1 rounded-full text-xs font-extrabold ${item.stok_saat_ini <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-sky-50 text-[#0088D1] border border-sky-200'}">${item.stok_saat_ini} ${satuanAsli}</span>
             </div>
           </div>
         `;
@@ -412,7 +447,11 @@
 
       container.innerHTML = filtered.map(r => {
         const isMasuk = r.jenis_transaksi === 'MASUK';
-        const infoSatuan = (r.satuan_input === 'Dus' && r.jumlah_input > 0) ? ` (${r.jumlah_input} Dus = ${r.jumlah} Pcs)` : ` (${r.jumlah} Pcs)`;
+        const barangMaster = dataBarang.find(b => b.nama_barang.toLowerCase() === r.nama_barang.toLowerCase());
+        const satuanDasar = barangMaster ? barangMaster.satuan : (SATUAN_GROSIR.includes(r.satuan_input) ? 'Pcs' : (r.satuan_input || 'Pcs'));
+        const isGrosir = SATUAN_GROSIR.includes(r.satuan_input) && r.jumlah_input > 0;
+        const infoSatuan = isGrosir ? ` (${r.jumlah_input} ${r.satuan_input} = ${r.jumlah} ${satuanDasar})` : ` (${r.jumlah} ${satuanDasar})`;
+
         return `
           <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-2.5">
             <div class="flex justify-between items-start">
@@ -426,8 +465,8 @@
               </div>
             </div>
             <div class="grid grid-cols-2 gap-1.5 bg-[#F7F9FA] p-3 rounded-xl text-[11px] text-gray-600">
-              <div>Jumlah:<br><strong class="${isMasuk ? 'text-[#0088D1]' : 'text-rose-600'} text-xs">${isMasuk ? '+' : '-'}${r.jumlah} Pcs</strong> <span class="text-[10px] text-gray-400">${infoSatuan}</span></div>
-              <div class="text-right">Stok Terakhir:<br><strong class="text-gray-900 text-xs">${r.stok_akhir} Pcs</strong></div>
+              <div>Jumlah:<br><strong class="${isMasuk ? 'text-[#0088D1]' : 'text-rose-600'} text-xs">${isMasuk ? '+' : '-'}${r.jumlah} ${satuanDasar}</strong> <span class="text-[10px] text-gray-400">${infoSatuan}</span></div>
+              <div class="text-right">Stok Terakhir:<br><strong class="text-gray-900 text-xs">${r.stok_akhir} ${satuanDasar}</strong></div>
               <div class="col-span-2 pt-1.5 border-t border-gray-200/70">${isMasuk ? `🚚 Distributor: <strong>${r.distributor || '-'}</strong>` : `🪪 ID Pelanggan/Member: <strong>${r.id_pelanggan || '-'}</strong>`}</div>
             </div>
             <div class="flex justify-between text-[11px] text-gray-500 pt-0.5">
@@ -439,9 +478,6 @@
       }).join('');
     }
 
-    // ==========================================
-    // LOGIKA EDIT & HAPUS DENGAN KOREKSI STOK OTOMATIS
-    // ==========================================
     function mulaiEditRiwayat(id) {
       const trx = dataRiwayat.find(r => r.id === id);
       if (!trx) return;
@@ -451,20 +487,22 @@
       setMode(trx.jenis_transaksi);
 
       document.getElementById('btn-batal-edit').classList.remove('hidden');
-      document.getElementById('switcher-mode').classList.add('hidden'); // Kunci jenis transaksi saat edit agar aman
+      document.getElementById('switcher-mode').classList.add('hidden');
       document.getElementById('input-nama').value = trx.nama_barang;
-      document.getElementById('input-nama').readOnly = true; // Kunci nama barang agar stok tetap konsisten
+      document.getElementById('input-nama').readOnly = true;
       document.getElementById('input-nama').classList.add('bg-gray-100', 'text-gray-500');
 
-      const satuan = trx.satuan_input || 'Pcs';
+      const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === trx.nama_barang.toLowerCase());
+      const satuan = trx.satuan_input || (barangAda ? barangAda.satuan : 'Pcs');
       document.getElementById('input-satuan').value = satuan;
-      document.getElementById('input-jumlah').value = (satuan === 'Dus' && trx.jumlah_input > 0) ? trx.jumlah_input : trx.jumlah;
+      document.getElementById('input-jumlah').value = (SATUAN_GROSIR.includes(satuan) && trx.jumlah_input > 0) ? trx.jumlah_input : trx.jumlah;
 
-      if (satuan === 'Dus') {
-        const isiPerDus = trx.jumlah_input > 0 ? Math.round(trx.jumlah / trx.jumlah_input) : 12;
-        document.getElementById('input-isi-dus').value = isiPerDus;
+      if (SATUAN_GROSIR.includes(satuan)) {
+        const isiPerPaket = trx.jumlah_input > 0 ? Math.round(trx.jumlah / trx.jumlah_input) : 12;
+        document.getElementById('input-isi-grosir').value = isiPerPaket;
+        document.getElementById('input-satuan-dasar').value = barangAda ? barangAda.satuan : 'Pcs';
       }
-      toggleIsiDus();
+      toggleKonversiGrosir();
 
       document.getElementById('input-distributor').value = trx.distributor || '';
       document.getElementById('input-pelanggan').value = trx.id_pelanggan || '';
@@ -480,7 +518,7 @@
       document.getElementById('input-nama').classList.remove('bg-gray-100', 'text-gray-500');
       document.getElementById('form-transaksi').reset();
       document.getElementById('input-tanggal').valueAsDate = new Date();
-      toggleIsiDus();
+      toggleKonversiGrosir();
       setMode(modeSaatIni);
     }
 
@@ -491,52 +529,49 @@
       const nama = document.getElementById('input-nama').value.trim();
       const jumlahInput = parseInt(document.getElementById('input-jumlah').value);
       const satuanInput = document.getElementById('input-satuan').value;
-      const isiDus = satuanInput === 'Dus' ? (parseInt(document.getElementById('input-isi-dus').value) || 1) : 1;
-      const totalPcsBaru = satuanInput === 'Dus' ? (jumlahInput * isiDus) : jumlahInput;
+      const isGrosir = SATUAN_GROSIR.includes(satuanInput);
+      const isiGrosir = isGrosir ? (parseInt(document.getElementById('input-isi-grosir').value) || 1) : 1;
+      const satuanDasarPilihan = isGrosir ? document.getElementById('input-satuan-dasar').value : satuanInput;
+      const totalUnitBaru = isGrosir ? (jumlahInput * isiGrosir) : jumlahInput;
+
       const distributor = document.getElementById('input-distributor').value.trim();
       const idPelanggan = document.getElementById('input-pelanggan').value.trim();
       const tanggal = document.getElementById('input-tanggal').value;
       const pj = document.getElementById('input-pj').value.trim();
 
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === nama.toLowerCase());
+      const satuanFinal = barangAda ? barangAda.satuan : satuanDasarPilihan;
 
       // JIKA MODE EDIT TRANSAKSI
       if (editTransaksiData) {
         if (!barangAda) { alert('Data master barang tidak ditemukan!'); return; }
 
-        // Hitung stok jika efek transaksi lama dibatalkan terlebih dahulu
         const stokSebelumTransaksiIni = editTransaksiData.jenis_transaksi === 'MASUK'
           ? (barangAda.stok_saat_ini - editTransaksiData.jumlah)
           : (barangAda.stok_saat_ini + editTransaksiData.jumlah);
 
         let stokSetelahEdit = 0;
         if (editTransaksiData.jenis_transaksi === 'KELUAR') {
-          if (stokSebelumTransaksiIni < totalPcsBaru) {
-            alert(`Gagal edit: Stok tidak mencukupi! Maksimal keluar adalah ${stokSebelumTransaksiIni} Pcs.`);
+          if (stokSebelumTransaksiIni < totalUnitBaru) {
+            alert(`Gagal edit: Stok tidak mencukupi! Maksimal keluar adalah ${stokSebelumTransaksiIni} ${satuanFinal}.`);
             return;
           }
-          stokSetelahEdit = stokSebelumTransaksiIni - totalPcsBaru;
+          stokSetelahEdit = stokSebelumTransaksiIni - totalUnitBaru;
         } else {
-          stokSetelahEdit = stokSebelumTransaksiIni + totalPcsBaru;
+          stokSetelahEdit = stokSebelumTransaksiIni + totalUnitBaru;
           if (stokSetelahEdit < 0) {
             alert('Gagal edit: Perubahan ini menyebabkan stok menjadi minus!');
             return;
           }
         }
 
-        // Update stok master barang
         const updateBarangObj = { stok_saat_ini: stokSetelahEdit, updated_at: new Date() };
-        if (satuanInput === 'Dus' && isiDus > 1) updateBarangObj.isi_per_dus = isiDus;
+        if (isGrosir && isiGrosir > 1) updateBarangObj.isi_per_dus = isiGrosir;
         const { error: errB } = await db.from('barang').update(updateBarangObj).eq('id', barangAda.id);
         if (errB) { alert('Gagal memperbarui stok barang: ' + errB.message); return; }
 
-        // Update baris transaksi
         const { error: errT } = await db.from('transaksi_stok').update({
-          tanggal,
-          penanggung_jawab: pj,
-          jumlah: totalPcsBaru,
-          satuan_input: satuanInput,
-          jumlah_input: jumlahInput,
+          tanggal, penanggung_jawab: pj, jumlah: totalUnitBaru, satuan_input: satuanInput, jumlah_input: jumlahInput,
           distributor: editTransaksiData.jenis_transaksi === 'MASUK' ? distributor : null,
           id_pelanggan: editTransaksiData.jenis_transaksi === 'KELUAR' ? idPelanggan : null,
           stok_akhir: stokSetelahEdit
@@ -544,7 +579,7 @@
 
         if (errT) { alert('Gagal memperbarui riwayat: ' + errT.message); return; }
 
-        alert(`Berhasil memperbarui transaksi! Stok terakhir sekarang: ${stokSetelahEdit} Pcs`);
+        alert(`Berhasil memperbarui transaksi! Stok terakhir sekarang: ${stokSetelahEdit} ${satuanFinal}`);
         batalEdit();
         await muatSemuaData();
         bukaTab('riwayat');
@@ -555,33 +590,35 @@
       let stokTerakhir = 0;
       if (modeSaatIni === 'KELUAR') {
         if (!barangAda) { alert('Gagal: Barang tidak ditemukan di daftar stok warung ini!'); return; }
-        if (barangAda.stok_saat_ini < totalPcsBaru) { alert(`Gagal: Stok tidak mencukupi! Dibutuhkan ${totalPcsBaru} Pcs, stok terakhir hanya ${barangAda.stok_saat_ini} Pcs`); return; }
-        stokTerakhir = barangAda.stok_saat_ini - totalPcsBaru;
+        if (barangAda.stok_saat_ini < totalUnitBaru) { alert(`Gagal: Stok tidak mencukupi! Dibutuhkan ${totalUnitBaru} ${satuanFinal}, stok terakhir hanya ${barangAda.stok_saat_ini} ${satuanFinal}`); return; }
+        stokTerakhir = barangAda.stok_saat_ini - totalUnitBaru;
       } else {
-        stokTerakhir = barangAda ? (barangAda.stok_saat_ini + totalPcsBaru) : totalPcsBaru;
+        stokTerakhir = barangAda ? (barangAda.stok_saat_ini + totalUnitBaru) : totalUnitBaru;
       }
 
       let resBarang;
       if (barangAda) {
         const updateData = { stok_saat_ini: stokTerakhir, updated_at: new Date() };
-        if (satuanInput === 'Dus' && isiDus > 1) updateData.isi_per_dus = isiDus;
+        if (isGrosir && isiGrosir > 1) updateData.isi_per_dus = isiGrosir;
         resBarang = await db.from('barang').update(updateData).eq('id', barangAda.id);
       } else {
-        resBarang = await db.from('barang').insert([{ user_id: currentUser.id, nama_barang: nama, stok_saat_ini: stokTerakhir, satuan: 'Pcs', isi_per_dus: isiDus }]);
+        resBarang = await db.from('barang').insert([{
+          user_id: currentUser.id, nama_barang: nama, stok_saat_ini: stokTerakhir, satuan: satuanFinal, isi_per_dus: isiGrosir
+        }]);
       }
       if (resBarang.error) { alert('GAGAL menyimpan stok: ' + resBarang.error.message); return; }
 
       const resTransaksi = await db.from('transaksi_stok').insert([{
         user_id: currentUser.id, nama_barang: barangAda ? barangAda.nama_barang : nama, jenis_transaksi: modeSaatIni,
-        tanggal, penanggung_jawab: pj, jumlah: totalPcsBaru, satuan_input: satuanInput, jumlah_input: jumlahInput,
+        tanggal, penanggung_jawab: pj, jumlah: totalUnitBaru, satuan_input: satuanInput, jumlah_input: jumlahInput,
         distributor: modeSaatIni === 'MASUK' ? distributor : null, id_pelanggan: modeSaatIni === 'KELUAR' ? idPelanggan : null, stok_akhir: stokTerakhir
       }]);
       if (resTransaksi.error) { alert('GAGAL menyimpan riwayat: ' + resTransaksi.error.message); return; }
 
-      alert(`Berhasil mencatat ${jumlahInput} ${satuanInput} (${totalPcsBaru} Pcs)! Stok terakhir: ${stokTerakhir} Pcs`);
+      alert(`Berhasil mencatat ${jumlahInput} ${satuanInput} (${totalUnitBaru} ${satuanFinal})! Stok terakhir: ${stokTerakhir} ${satuanFinal}`);
       document.getElementById('form-transaksi').reset();
       document.getElementById('input-tanggal').valueAsDate = new Date();
-      toggleIsiDus();
+      toggleKonversiGrosir();
       setMode(modeSaatIni);
       await muatSemuaData();
       bukaTab('riwayat');
@@ -591,16 +628,18 @@
       const trx = dataRiwayat.find(r => r.id === id);
       if (!trx) return;
 
-      if (!confirm(`Hapus transaksi ${trx.jenis_transaksi} "${trx.nama_barang}" (${trx.jumlah} Pcs)? Stok barang akan disesuaikan otomatis.`)) return;
-
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === trx.nama_barang.toLowerCase());
+      const satuanFinal = barangAda ? barangAda.satuan : 'Pcs';
+
+      if (!confirm(`Hapus transaksi ${trx.jenis_transaksi} "${trx.nama_barang}" (${trx.jumlah} ${satuanFinal})? Stok barang akan disesuaikan otomatis.`)) return;
+
       if (barangAda) {
         const stokTerkoreksi = trx.jenis_transaksi === 'MASUK'
           ? (barangAda.stok_saat_ini - trx.jumlah)
           : (barangAda.stok_saat_ini + trx.jumlah);
 
         if (stokTerkoreksi < 0) {
-          alert(`Tidak dapat menghapus transaksi masuk ini karena sebagian barang sudah tercatat keluar (stok akan menjadi ${stokTerkoreksi} Pcs). Hapus transaksi keluarnya terlebih dahulu.`);
+          alert(`Tidak dapat menghapus transaksi masuk ini karena sebagian barang sudah tercatat keluar (stok akan menjadi ${stokTerkoreksi} ${satuanFinal}). Hapus transaksi keluarnya terlebih dahulu.`);
           return;
         }
 
