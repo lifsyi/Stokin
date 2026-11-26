@@ -1,35 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>StokWarung - Inventaris & Logistik UMKM</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#00AED6" />
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7f9; }
-    .gopay-gradient {
-      background: linear-gradient(135deg, #00AED6 0%, #0077C8 100%);
-    }
-    .gopay-card-glass {
-      background: rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-    }
-  </style>
-</head>
-<body class="flex justify-center min-h-screen">
-
-  <div class="w-full max-w-md bg-white min-h-screen shadow-md flex flex-col relative">
-
-    <!-- ========================================== -->
-    <!-- HALAMAN 1: LOGIN & DAFTAR AKUN WARUNG      -->
-    <!-- ========================================== -->
-    <section id="view-auth" class="flex-1 flex flex-col justify-center p-6 bg-white text-gray-800">
-      <div class="bg-white border border-sky-100 rounded-3xl p-6 shadow-xl shadow-sky-900/5">
-        <div class="text-center mb-6">
-          <div class="inline-flex items-center justify-center w-16 h-16
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#00AED6" />
+    <meta name="description" content="StokWarung — inventaris dan logistik untuk UMKM." />
+    <title>StokWarung - Inventaris &amp; Logistik UMKM</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { color-scheme: light; font-family: "Plus Jakarta Sans", sans-serif; color: #102a43; background: #f4f7f9; font-synthesis: none; }
+      * { box-sizing: border-box; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; }
+      main { width: min(100%, 440px); }
+      .card { padding: 36px; border: 1px solid #e4edf2; border-radius: 28px; background: #fff; box-shadow: 0 20px 60px rgb(16 42 67 / 9%); }
+      .brand { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 28px; }
+      .brand-mark { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #00aed6, #0077c8); font-size: 22px; font-weight: 800; }
+      .brand-name { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.04em; }
+      h2 { margin: 0; font-size: 25px; letter-spacing: -0.04em; }
+      .intro { margin: 8px 0 26px; color: #627d98; font-size: 14px; line-height: 1.6; }
+      label { display: block; margin: 16px 0 7px; color: #334e68; font-size: 13px; font-weight: 700; }
+      input { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #d9e2ec; border-radius: 12px; color: #102a43; font: inherit; outline: none; }
+      input:focus { border-color: #00a8d0; box-shadow: 0 0 0 3px rgb(0 174 214 / 15%); }
+      button { width: 100%; min-height: 50px; margin-top: 24px; border: 0; border-radius: 13px; color: #fff; background: linear-gradient(135deg, #00aed6, #0077c8); font: inherit; font-weight: 700; }
+      .note { margin: 20px 0 0; color: #829ab1; font-size: 12px; line-height: 1.6; text-align: center; }
+      @media (max-width: 480px) { body { padding: 16px; } .card { padding: 28px 22px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card" aria-labelledby="welcome-title">
+        <header class="brand">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <p class="brand-name">StokWarung</p>
+        </header>
+        <h2 id="welcome-title">Kelola stok lebih mudah</h2>
+        <p class="intro">Masuk ke akun warung Anda untuk mengelola inventaris dan logistik UMKM.</p>
+        <form>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="username" placeholder="nama@warung.id" />
+          <label for="password">Kata sandi</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Masukkan kata sandi" />
+          <button type="button" aria-describedby="auth-note">Masuk</button>
+        </form>
+        <p class="note" id="auth-note">Halaman akses StokWarung · Inventaris &amp; Logistik UMKM</p>
+      </section>
+    </main>
+  </body>
+</html>
