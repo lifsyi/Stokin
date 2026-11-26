@@ -90,11 +90,15 @@
         </div>
       </main>
 
-      <!-- Tab 2: Form Catat Masuk / Keluar -->
+      <!-- Tab 2: Form Catat / Edit Masuk & Keluar -->
       <main id="tab-form" class="p-4 flex-1 hidden">
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-          <h2 id="judul-form" class="font-extrabold text-base text-gray-900 mb-3">Catat Barang Masuk</h2>
-          <div class="grid grid-cols-2 gap-1.5 bg-sky-50 p-1 rounded-full mb-4">
+          <div class="flex justify-between items-center mb-3">
+            <h2 id="judul-form" class="font-extrabold text-base text-gray-900">Catat Barang Masuk</h2>
+            <button type="button" id="btn-batal-edit" onclick="batalEdit()" class="hidden text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full">✕ Batal Edit</button>
+          </div>
+
+          <div id="switcher-mode" class="grid grid-cols-2 gap-1.5 bg-sky-50 p-1 rounded-full mb-4">
             <button type="button" id="btn-mode-masuk" onclick="setMode('MASUK')" class="py-2 rounded-full text-xs font-bold bg-[#00AED6] text-white shadow-sm transition">+ Barang Masuk</button>
             <button type="button" id="btn-mode-keluar" onclick="setMode('KELUAR')" class="py-2 rounded-full text-xs font-bold text-[#0077C8] transition">- Barang Keluar</button>
           </div>
@@ -188,6 +192,7 @@
     let dataBarang = [];
     let dataRiwayat = [];
     let modeSaatIni = 'MASUK';
+    let editTransaksiData = null; // Menyimpan objek transaksi jika sedang mode Edit
 
     document.getElementById('input-tanggal').valueAsDate = new Date();
 
@@ -319,8 +324,8 @@
         btnMasuk.className = 'py-2 rounded-full text-xs font-bold bg-[#00AED6] text-white shadow-sm transition';
         btnKeluar.className = 'py-2 rounded-full text-xs font-bold text-[#0077C8] transition';
         btnSubmit.className = 'w-full gopay-gradient hover:opacity-95 text-white font-bold py-3.5 rounded-full shadow-lg shadow-sky-500/30 transition mt-2 text-sm';
-        btnSubmit.innerText = 'Simpan Barang Masuk';
-        judul.innerText = 'Catat Barang Masuk';
+        btnSubmit.innerText = editTransaksiData ? 'Simpan Perubahan Masuk' : 'Simpan Barang Masuk';
+        judul.innerText = editTransaksiData ? 'Edit Barang Masuk' : 'Catat Barang Masuk';
         grupDistributor.classList.remove('hidden');
         inputDistributor.required = true;
         grupPelanggan.classList.add('hidden');
@@ -329,8 +334,8 @@
         btnKeluar.className = 'py-2 rounded-full text-xs font-bold bg-rose-500 text-white shadow-sm transition';
         btnMasuk.className = 'py-2 rounded-full text-xs font-bold text-[#0077C8] transition';
         btnSubmit.className = 'w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-full shadow-lg shadow-rose-500/30 transition mt-2 text-sm';
-        btnSubmit.innerText = 'Simpan Barang Keluar';
-        judul.innerText = 'Catat Barang Keluar';
+        btnSubmit.innerText = editTransaksiData ? 'Simpan Perubahan Keluar' : 'Simpan Barang Keluar';
+        judul.innerText = editTransaksiData ? 'Edit Barang Keluar' : 'Catat Barang Keluar';
         grupDistributor.classList.add('hidden');
         inputDistributor.required = false;
         grupPelanggan.classList.remove('hidden');
@@ -415,7 +420,10 @@
                 <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isMasuk ? 'bg-sky-100 text-[#0077C8]' : 'bg-rose-100 text-rose-700'}">${isMasuk ? '▲ BARANG MASUK' : '▼ BARANG KELUAR'}</span>
                 <h4 class="font-bold text-gray-800 text-sm mt-1.5">${r.nama_barang}</h4>
               </div>
-              <button onclick="hapusRiwayat(${r.id})" class="text-xs text-gray-400 hover:text-rose-600 font-medium">Hapus</button>
+              <div class="flex gap-2">
+                <button onclick="mulaiEditRiwayat(${r.id})" class="text-xs bg-sky-50 text-[#0077C8] hover:bg-sky-100 px-2.5 py-1 rounded-full font-bold transition">Edit</button>
+                <button onclick="hapusRiwayat(${r.id})" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-full font-bold transition">Hapus</button>
+              </div>
             </div>
             <div class="grid grid-cols-2 gap-1.5 bg-[#F7F9FA] p-3 rounded-xl text-[11px] text-gray-600">
               <div>Jumlah:<br><strong class="${isMasuk ? 'text-[#0088D1]' : 'text-rose-600'} text-xs">${isMasuk ? '+' : '-'}${r.jumlah} Pcs</strong> <span class="text-[10px] text-gray-400">${infoSatuan}</span></div>
@@ -431,28 +439,126 @@
       }).join('');
     }
 
+    // ==========================================
+    // LOGIKA EDIT & HAPUS DENGAN KOREKSI STOK OTOMATIS
+    // ==========================================
+    function mulaiEditRiwayat(id) {
+      const trx = dataRiwayat.find(r => r.id === id);
+      if (!trx) return;
+
+      editTransaksiData = trx;
+      bukaTab('form');
+      setMode(trx.jenis_transaksi);
+
+      document.getElementById('btn-batal-edit').classList.remove('hidden');
+      document.getElementById('switcher-mode').classList.add('hidden'); // Kunci jenis transaksi saat edit agar aman
+      document.getElementById('input-nama').value = trx.nama_barang;
+      document.getElementById('input-nama').readOnly = true; // Kunci nama barang agar stok tetap konsisten
+      document.getElementById('input-nama').classList.add('bg-gray-100', 'text-gray-500');
+
+      const satuan = trx.satuan_input || 'Pcs';
+      document.getElementById('input-satuan').value = satuan;
+      document.getElementById('input-jumlah').value = (satuan === 'Dus' && trx.jumlah_input > 0) ? trx.jumlah_input : trx.jumlah;
+
+      if (satuan === 'Dus') {
+        const isiPerDus = trx.jumlah_input > 0 ? Math.round(trx.jumlah / trx.jumlah_input) : 12;
+        document.getElementById('input-isi-dus').value = isiPerDus;
+      }
+      toggleIsiDus();
+
+      document.getElementById('input-distributor').value = trx.distributor || '';
+      document.getElementById('input-pelanggan').value = trx.id_pelanggan || '';
+      document.getElementById('input-tanggal').value = trx.tanggal;
+      document.getElementById('input-pj').value = trx.penanggung_jawab;
+    }
+
+    function batalEdit() {
+      editTransaksiData = null;
+      document.getElementById('btn-batal-edit').classList.add('hidden');
+      document.getElementById('switcher-mode').classList.remove('hidden');
+      document.getElementById('input-nama').readOnly = false;
+      document.getElementById('input-nama').classList.remove('bg-gray-100', 'text-gray-500');
+      document.getElementById('form-transaksi').reset();
+      document.getElementById('input-tanggal').valueAsDate = new Date();
+      toggleIsiDus();
+      setMode(modeSaatIni);
+    }
+
     async function simpanTransaksi(e) {
       e.preventDefault();
       if (!currentUser) return;
+
       const nama = document.getElementById('input-nama').value.trim();
       const jumlahInput = parseInt(document.getElementById('input-jumlah').value);
       const satuanInput = document.getElementById('input-satuan').value;
       const isiDus = satuanInput === 'Dus' ? (parseInt(document.getElementById('input-isi-dus').value) || 1) : 1;
-      const totalPcs = satuanInput === 'Dus' ? (jumlahInput * isiDus) : jumlahInput;
+      const totalPcsBaru = satuanInput === 'Dus' ? (jumlahInput * isiDus) : jumlahInput;
       const distributor = document.getElementById('input-distributor').value.trim();
       const idPelanggan = document.getElementById('input-pelanggan').value.trim();
       const tanggal = document.getElementById('input-tanggal').value;
       const pj = document.getElementById('input-pj').value.trim();
 
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === nama.toLowerCase());
-      let stokTerakhir = 0;
 
+      // JIKA MODE EDIT TRANSAKSI
+      if (editTransaksiData) {
+        if (!barangAda) { alert('Data master barang tidak ditemukan!'); return; }
+
+        // Hitung stok jika efek transaksi lama dibatalkan terlebih dahulu
+        const stokSebelumTransaksiIni = editTransaksiData.jenis_transaksi === 'MASUK'
+          ? (barangAda.stok_saat_ini - editTransaksiData.jumlah)
+          : (barangAda.stok_saat_ini + editTransaksiData.jumlah);
+
+        let stokSetelahEdit = 0;
+        if (editTransaksiData.jenis_transaksi === 'KELUAR') {
+          if (stokSebelumTransaksiIni < totalPcsBaru) {
+            alert(`Gagal edit: Stok tidak mencukupi! Maksimal keluar adalah ${stokSebelumTransaksiIni} Pcs.`);
+            return;
+          }
+          stokSetelahEdit = stokSebelumTransaksiIni - totalPcsBaru;
+        } else {
+          stokSetelahEdit = stokSebelumTransaksiIni + totalPcsBaru;
+          if (stokSetelahEdit < 0) {
+            alert('Gagal edit: Perubahan ini menyebabkan stok menjadi minus!');
+            return;
+          }
+        }
+
+        // Update stok master barang
+        const updateBarangObj = { stok_saat_ini: stokSetelahEdit, updated_at: new Date() };
+        if (satuanInput === 'Dus' && isiDus > 1) updateBarangObj.isi_per_dus = isiDus;
+        const { error: errB } = await db.from('barang').update(updateBarangObj).eq('id', barangAda.id);
+        if (errB) { alert('Gagal memperbarui stok barang: ' + errB.message); return; }
+
+        // Update baris transaksi
+        const { error: errT } = await db.from('transaksi_stok').update({
+          tanggal,
+          penanggung_jawab: pj,
+          jumlah: totalPcsBaru,
+          satuan_input: satuanInput,
+          jumlah_input: jumlahInput,
+          distributor: editTransaksiData.jenis_transaksi === 'MASUK' ? distributor : null,
+          id_pelanggan: editTransaksiData.jenis_transaksi === 'KELUAR' ? idPelanggan : null,
+          stok_akhir: stokSetelahEdit
+        }).eq('id', editTransaksiData.id);
+
+        if (errT) { alert('Gagal memperbarui riwayat: ' + errT.message); return; }
+
+        alert(`Berhasil memperbarui transaksi! Stok terakhir sekarang: ${stokSetelahEdit} Pcs`);
+        batalEdit();
+        await muatSemuaData();
+        bukaTab('riwayat');
+        return;
+      }
+
+      // JIKA MODE TAMBAH BARU
+      let stokTerakhir = 0;
       if (modeSaatIni === 'KELUAR') {
         if (!barangAda) { alert('Gagal: Barang tidak ditemukan di daftar stok warung ini!'); return; }
-        if (barangAda.stok_saat_ini < totalPcs) { alert(`Gagal: Stok tidak mencukupi! Dibutuhkan ${totalPcs} Pcs, stok terakhir hanya ${barangAda.stok_saat_ini} Pcs`); return; }
-        stokTerakhir = barangAda.stok_saat_ini - totalPcs;
+        if (barangAda.stok_saat_ini < totalPcsBaru) { alert(`Gagal: Stok tidak mencukupi! Dibutuhkan ${totalPcsBaru} Pcs, stok terakhir hanya ${barangAda.stok_saat_ini} Pcs`); return; }
+        stokTerakhir = barangAda.stok_saat_ini - totalPcsBaru;
       } else {
-        stokTerakhir = barangAda ? (barangAda.stok_saat_ini + totalPcs) : totalPcs;
+        stokTerakhir = barangAda ? (barangAda.stok_saat_ini + totalPcsBaru) : totalPcsBaru;
       }
 
       let resBarang;
@@ -467,12 +573,12 @@
 
       const resTransaksi = await db.from('transaksi_stok').insert([{
         user_id: currentUser.id, nama_barang: barangAda ? barangAda.nama_barang : nama, jenis_transaksi: modeSaatIni,
-        tanggal, penanggung_jawab: pj, jumlah: totalPcs, satuan_input: satuanInput, jumlah_input: jumlahInput,
+        tanggal, penanggung_jawab: pj, jumlah: totalPcsBaru, satuan_input: satuanInput, jumlah_input: jumlahInput,
         distributor: modeSaatIni === 'MASUK' ? distributor : null, id_pelanggan: modeSaatIni === 'KELUAR' ? idPelanggan : null, stok_akhir: stokTerakhir
       }]);
       if (resTransaksi.error) { alert('GAGAL menyimpan riwayat: ' + resTransaksi.error.message); return; }
 
-      alert(`Berhasil mencatat ${jumlahInput} ${satuanInput} (${totalPcs} Pcs)! Stok terakhir: ${stokTerakhir} Pcs`);
+      alert(`Berhasil mencatat ${jumlahInput} ${satuanInput} (${totalPcsBaru} Pcs)! Stok terakhir: ${stokTerakhir} Pcs`);
       document.getElementById('form-transaksi').reset();
       document.getElementById('input-tanggal').valueAsDate = new Date();
       toggleIsiDus();
@@ -482,7 +588,29 @@
     }
 
     async function hapusRiwayat(id) {
-      if (!confirm('Hapus catatan riwayat ini?')) return;
+      const trx = dataRiwayat.find(r => r.id === id);
+      if (!trx) return;
+
+      if (!confirm(`Hapus transaksi ${trx.jenis_transaksi} "${trx.nama_barang}" (${trx.jumlah} Pcs)? Stok barang akan disesuaikan otomatis.`)) return;
+
+      const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === trx.nama_barang.toLowerCase());
+      if (barangAda) {
+        const stokTerkoreksi = trx.jenis_transaksi === 'MASUK'
+          ? (barangAda.stok_saat_ini - trx.jumlah)
+          : (barangAda.stok_saat_ini + trx.jumlah);
+
+        if (stokTerkoreksi < 0) {
+          alert(`Tidak dapat menghapus transaksi masuk ini karena sebagian barang sudah tercatat keluar (stok akan menjadi ${stokTerkoreksi} Pcs). Hapus transaksi keluarnya terlebih dahulu.`);
+          return;
+        }
+
+        const { error: errUpdate } = await db.from('barang')
+          .update({ stok_saat_ini: stokTerkoreksi, updated_at: new Date() })
+          .eq('id', barangAda.id);
+
+        if (errUpdate) { alert('Gagal menyesuaikan stok: ' + errUpdate.message); return; }
+      }
+
       const { error } = await db.from('transaksi_stok').delete().eq('id', id);
       if (error) { alert('Gagal menghapus: ' + error.message); return; }
       muatSemuaData();
