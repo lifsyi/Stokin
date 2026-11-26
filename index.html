@@ -152,7 +152,7 @@
                   <option value="Liter">Liter</option>
                 </select>
               </div>
-              <p class="text-[11px] text-sky-700">Stok otomatis dikonversi ke satuan eceran agar akurat saat dikeluarkan.</p>
+              <p class="text-[11px] text-sky-700">Stok otomatis dikonversi ke satuan eceran di atas agar akurat saat dikeluarkan.</p>
             </div>
 
             <div id="grup-distributor">
@@ -251,11 +251,11 @@
       const nama = document.getElementById('input-nama').value.trim().toLowerCase();
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === nama);
       if (barangAda) {
-        // Jika barang sudah pernah dicatat, sesuaikan satuan dasarnya otomatis
+        const satuanAman = SATUAN_GROSIR.includes(barangAda.satuan) ? 'Pcs' : (barangAda.satuan || 'Pcs');
         if (!SATUAN_GROSIR.includes(document.getElementById('input-satuan').value)) {
-          document.getElementById('input-satuan').value = barangAda.satuan || 'Pcs';
+          document.getElementById('input-satuan').value = satuanAman;
         }
-        document.getElementById('input-satuan-dasar').value = barangAda.satuan || 'Pcs';
+        document.getElementById('input-satuan-dasar').value = satuanAman;
         if (barangAda.isi_per_dus > 1) {
           document.getElementById('input-isi-grosir').value = barangAda.isi_per_dus;
         }
@@ -314,7 +314,7 @@
       const { data: { session } } = await db.auth.getSession();
       if (session && session.user) {
         currentUser = session.user;
-        document.getElementById('label-nama-warung').innerText = currentUser.user_metadata?.nama_warung || 'StokWarung';
+        document.getElementById('label-nama-warung').innerText = currentUser.user_metadata?.nama_warung || 'Stokin';
         document.getElementById('label-email-warung').innerText = currentUser.email;
         document.getElementById('view-auth').classList.add('hidden');
         document.getElementById('view-app').classList.remove('hidden');
@@ -402,7 +402,7 @@
       }
 
       container.innerHTML = list.map(item => {
-        const satuanAsli = item.satuan || 'Pcs';
+        const satuanAsli = SATUAN_GROSIR.includes(item.satuan) ? 'Pcs' : (item.satuan || 'Pcs');
         const isiGrosir = item.isi_per_dus || 1;
         let infoGrosir = '';
         if (isiGrosir > 1 && item.stok_saat_ini >= isiGrosir) {
@@ -448,7 +448,8 @@
       container.innerHTML = filtered.map(r => {
         const isMasuk = r.jenis_transaksi === 'MASUK';
         const barangMaster = dataBarang.find(b => b.nama_barang.toLowerCase() === r.nama_barang.toLowerCase());
-        const satuanDasar = barangMaster ? barangMaster.satuan : (SATUAN_GROSIR.includes(r.satuan_input) ? 'Pcs' : (r.satuan_input || 'Pcs'));
+        const satuanMasterAman = (barangMaster && !SATUAN_GROSIR.includes(barangMaster.satuan)) ? barangMaster.satuan : 'Pcs';
+        const satuanDasar = SATUAN_GROSIR.includes(r.satuan_input) ? satuanMasterAman : (r.satuan_input || satuanMasterAman);
         const isGrosir = SATUAN_GROSIR.includes(r.satuan_input) && r.jumlah_input > 0;
         const infoSatuan = isGrosir ? ` (${r.jumlah_input} ${r.satuan_input} = ${r.jumlah} ${satuanDasar})` : ` (${r.jumlah} ${satuanDasar})`;
 
@@ -493,14 +494,15 @@
       document.getElementById('input-nama').classList.add('bg-gray-100', 'text-gray-500');
 
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === trx.nama_barang.toLowerCase());
-      const satuan = trx.satuan_input || (barangAda ? barangAda.satuan : 'Pcs');
+      const satuanMasterAman = (barangAda && !SATUAN_GROSIR.includes(barangAda.satuan)) ? barangAda.satuan : 'Pcs';
+      const satuan = trx.satuan_input || satuanMasterAman;
       document.getElementById('input-satuan').value = satuan;
       document.getElementById('input-jumlah').value = (SATUAN_GROSIR.includes(satuan) && trx.jumlah_input > 0) ? trx.jumlah_input : trx.jumlah;
 
       if (SATUAN_GROSIR.includes(satuan)) {
         const isiPerPaket = trx.jumlah_input > 0 ? Math.round(trx.jumlah / trx.jumlah_input) : 12;
         document.getElementById('input-isi-grosir').value = isiPerPaket;
-        document.getElementById('input-satuan-dasar').value = barangAda ? barangAda.satuan : 'Pcs';
+        document.getElementById('input-satuan-dasar').value = satuanMasterAman;
       }
       toggleKonversiGrosir();
 
@@ -540,7 +542,8 @@
       const pj = document.getElementById('input-pj').value.trim();
 
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === nama.toLowerCase());
-      const satuanFinal = barangAda ? barangAda.satuan : satuanDasarPilihan;
+      // Jika user memilih satuan dasar baru (seperti Pcs/Botol), gunakan pilihan user tersebut!
+      const satuanFinal = isGrosir ? satuanDasarPilihan : ((barangAda && !SATUAN_GROSIR.includes(barangAda.satuan)) ? barangAda.satuan : satuanDasarPilihan);
 
       // JIKA MODE EDIT TRANSAKSI
       if (editTransaksiData) {
@@ -565,7 +568,7 @@
           }
         }
 
-        const updateBarangObj = { stok_saat_ini: stokSetelahEdit, updated_at: new Date() };
+        const updateBarangObj = { stok_saat_ini: stokSetelahEdit, satuan: satuanFinal, updated_at: new Date() };
         if (isGrosir && isiGrosir > 1) updateBarangObj.isi_per_dus = isiGrosir;
         const { error: errB } = await db.from('barang').update(updateBarangObj).eq('id', barangAda.id);
         if (errB) { alert('Gagal memperbarui stok barang: ' + errB.message); return; }
@@ -598,7 +601,7 @@
 
       let resBarang;
       if (barangAda) {
-        const updateData = { stok_saat_ini: stokTerakhir, updated_at: new Date() };
+        const updateData = { stok_saat_ini: stokTerakhir, satuan: satuanFinal, updated_at: new Date() };
         if (isGrosir && isiGrosir > 1) updateData.isi_per_dus = isiGrosir;
         resBarang = await db.from('barang').update(updateData).eq('id', barangAda.id);
       } else {
@@ -629,7 +632,7 @@
       if (!trx) return;
 
       const barangAda = dataBarang.find(b => b.nama_barang.toLowerCase() === trx.nama_barang.toLowerCase());
-      const satuanFinal = barangAda ? barangAda.satuan : 'Pcs';
+      const satuanFinal = (barangAda && !SATUAN_GROSIR.includes(barangAda.satuan)) ? barangAda.satuan : 'Pcs';
 
       if (!confirm(`Hapus transaksi ${trx.jenis_transaksi} "${trx.nama_barang}" (${trx.jumlah} ${satuanFinal})? Stok barang akan disesuaikan otomatis.`)) return;
 
