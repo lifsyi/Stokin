@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Stokin - Inventaris & Logistik</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#059669" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -400,5 +403,10 @@
 
     muatSemuaData();
   </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 </body>
 </html>
