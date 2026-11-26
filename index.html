@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Stokin - Inventaris & Logistik</title>
+  <title>Stokin - Inventaris & Logistik UMKM</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#059669" />
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" />
@@ -16,162 +16,328 @@
 </head>
 <body class="flex justify-center min-h-screen">
 
-  <div class="w-full max-w-md bg-white min-h-screen shadow-lg flex flex-col relative pb-20">
-    
-    <!-- Header -->
-    <header class="bg-emerald-600 text-white p-5 rounded-b-2xl shadow-md">
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-xl font-bold tracking-tight">Stokin</h1>
-          <p class="text-xs text-emerald-100">Sistem Pencatatan Stok Masuk & Keluar</p>
-        </div>
-        <button onclick="muatSemuaData()" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg text-xs font-medium">
-          ↻ Refresh
-        </button>
-      </div>
+  <div class="w-full max-w-md bg-white min-h-screen shadow-lg flex flex-col relative">
 
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <div class="bg-emerald-700/60 p-3 rounded-xl">
-          <p class="text-xs text-emerald-100">Total Jenis Barang</p>
-          <p id="stat-jenis" class="text-2xl font-bold mt-0.5">0</p>
-        </div>
-        <div class="bg-emerald-700/60 p-3 rounded-xl">
-          <p class="text-xs text-emerald-100">Total Stok Tersedia</p>
-          <p id="stat-unit" class="text-2xl font-bold mt-0.5">0</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- Tab 1: Stok Terakhir -->
-    <main id="tab-stok" class="p-4 flex-1 space-y-3">
-      <div class="flex justify-between items-center">
-        <h2 class="font-semibold text-gray-800 text-sm">Stok Barang Saat Ini</h2>
-        <input type="text" id="cari-barang" onkeyup="filterBarang()" placeholder="Cari barang..." 
-          class="text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500">
-      </div>
-      <div id="list-barang" class="space-y-2.5">
-        <p class="text-center text-gray-400 text-sm py-8">Memuat data stok...</p>
-      </div>
-    </main>
-
-    <!-- Tab 2: Form Catat Masuk / Keluar -->
-    <main id="tab-form" class="p-4 flex-1 hidden">
-      <h2 id="judul-form" class="font-bold text-lg text-gray-800 mb-3">Catat Barang Masuk</h2>
-      
-      <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-xl mb-4">
-        <button type="button" id="btn-mode-masuk" onclick="setMode('MASUK')" 
-          class="py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white shadow">
-          + Barang Masuk
-        </button>
-        <button type="button" id="btn-mode-keluar" onclick="setMode('KELUAR')" 
-          class="py-2 rounded-lg text-sm font-semibold text-gray-600">
-          - Barang Keluar
-        </button>
-      </div>
-
-      <form id="form-transaksi" onsubmit="simpanTransaksi(event)" class="space-y-3.5">
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Barang</label>
-          <input type="text" id="input-nama" list="daftar-barang-datalist" required placeholder="Ketik atau pilih nama barang..."
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-          <datalist id="daftar-barang-datalist"></datalist>
+    <!-- ========================================== -->
+    <!-- HALAMAN 1: LOGIN & DAFTAR AKUN WARUNG      -->
+    <!-- ========================================== -->
+    <section id="view-auth" class="flex-1 flex flex-col justify-center p-6 bg-gradient-to-b from-emerald-600 to-emerald-800 text-white">
+      <div class="bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+        <div class="text-center mb-5">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 text-2xl mb-2">
+            🏪
+          </div>
+          <h1 class="text-xl font-bold text-gray-900">Stokin</h1>
+          <p class="text-xs text-gray-500 mt-0.5">Kelola stok masuk & keluar khusus warung Anda</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah</label>
-            <input type="number" id="input-jumlah" min="1" required placeholder="0"
+        <!-- Switcher Login / Daftar -->
+        <div class="grid grid-cols-2 gap-1 bg-gray-100 p-1 rounded-xl mb-4 text-xs font-semibold">
+          <button type="button" id="tab-auth-login" onclick="setAuthMode('LOGIN')" class="py-2 rounded-lg bg-white text-emerald-700 shadow">
+            Masuk (Login)
+          </button>
+          <button type="button" id="tab-auth-register" onclick="setAuthMode('REGISTER')" class="py-2 rounded-lg text-gray-500">
+            Daftar Warung Baru
+          </button>
+        </div>
+
+        <form id="form-auth" onsubmit="prosesAuth(event)" class="space-y-3.5">
+          <!-- Nama Warung (Muncul hanya saat Daftar Baru) -->
+          <div id="grup-nama-warung" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Warung / Toko</label>
+            <input type="text" id="auth-nama-warung" placeholder="Contoh: Warung Sembako Berkah"
               class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
           </div>
-          <div id="grup-satuan">
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
-            <select id="input-satuan" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white">
-              <option value="Pcs">Pcs</option>
-              <option value="Dus">Dus</option>
-              <option value="Karung">Karung</option>
-              <option value="Botol">Botol</option>
-              <option value="Kg">Kg</option>
-            </select>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Email Akun Warung</label>
+            <input type="email" id="auth-email" required placeholder="warung@email.com"
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Password</label>
+            <input type="password" id="auth-password" minlength="6" required placeholder="Minimal 6 karakter"
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <button type="submit" id="btn-auth-submit"
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md transition mt-2 text-sm">
+            Masuk ke Warung
+          </button>
+        </form>
+      </div>
+      <p class="text-center text-[11px] text-emerald-100 mt-5">Setiap warung memiliki database stok & riwayat terpisah.</p>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- HALAMAN 2: APLIKASI UTAMA (SETELAH LOGIN)  -->
+    <!-- ========================================== -->
+    <div id="view-app" class="hidden flex-1 flex flex-col pb-20">
+      
+      <!-- Header -->
+      <header class="bg-emerald-600 text-white p-5 rounded-b-2xl shadow-md">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider bg-emerald-800/70 px-2 py-0.5 rounded text-emerald-100 font-semibold">
+              Akun Warung Aktif
+            </span>
+            <h1 id="label-nama-warung" class="text-lg font-bold tracking-tight mt-1">Stokin</h1>
+            <p id="label-email-warung" class="text-[11px] text-emerald-100">-</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="muatSemuaData()" class="bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1.5 rounded-lg text-xs font-medium" title="Muat Ulang">
+              ↻
+            </button>
+            <button onclick="logoutWarung()" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1.5 rounded-lg text-xs font-medium">
+              Keluar
+            </button>
           </div>
         </div>
 
-        <div id="grup-distributor">
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Distributor Mana</label>
-          <input type="text" id="input-distributor" required placeholder="Contoh: PT Sumber Makmur / Agen Jaya"
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-emerald-700/60 p-3 rounded-xl">
+            <p class="text-xs text-emerald-100">Total Jenis Barang</p>
+            <p id="stat-jenis" class="text-2xl font-bold mt-0.5">0</p>
+          </div>
+          <div class="bg-emerald-700/60 p-3 rounded-xl">
+            <p class="text-xs text-emerald-100">Total Stok Tersedia</p>
+            <p id="stat-unit" class="text-2xl font-bold mt-0.5">0</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tab 1: Stok Terakhir -->
+      <main id="tab-stok" class="p-4 flex-1 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-gray-800 text-sm">Stok Barang Saat Ini</h2>
+          <input type="text" id="cari-barang" onkeyup="filterBarang()" placeholder="Cari barang..." 
+            class="text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500">
+        </div>
+        <div id="list-barang" class="space-y-2.5">
+          <p class="text-center text-gray-400 text-sm py-8">Memuat data stok...</p>
+        </div>
+      </main>
+
+      <!-- Tab 2: Form Catat Masuk / Keluar -->
+      <main id="tab-form" class="p-4 flex-1 hidden">
+        <h2 id="judul-form" class="font-bold text-lg text-gray-800 mb-3">Catat Barang Masuk</h2>
+        
+        <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-xl mb-4">
+          <button type="button" id="btn-mode-masuk" onclick="setMode('MASUK')" 
+            class="py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white shadow">
+            + Barang Masuk
+          </button>
+          <button type="button" id="btn-mode-keluar" onclick="setMode('KELUAR')" 
+            class="py-2 rounded-lg text-sm font-semibold text-gray-600">
+            - Barang Keluar
+          </button>
         </div>
 
-        <div id="grup-pelanggan" class="hidden">
-          <label class="block text-xs font-semibold text-gray-700 mb-1">ID Pelanggan / No. Member</label>
-          <input type="text" id="input-pelanggan" placeholder="Contoh: MBR-0012 / Umum"
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-500">
-        </div>
+        <form id="form-transaksi" onsubmit="simpanTransaksi(event)" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Barang</label>
+            <input type="text" id="input-nama" list="daftar-barang-datalist" required placeholder="Ketik atau pilih nama barang..."
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+            <datalist id="daftar-barang-datalist"></datalist>
+          </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
-          <input type="date" id="input-tanggal" required
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-        </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah</label>
+              <input type="number" id="input-jumlah" min="1" required placeholder="0"
+                class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div id="grup-satuan">
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
+              <select id="input-satuan" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white">
+                <option value="Pcs">Pcs</option>
+                <option value="Dus">Dus</option>
+                <option value="Karung">Karung</option>
+                <option value="Botol">Botol</option>
+                <option value="Kg">Kg</option>
+              </select>
+            </div>
+          </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Yang Bertanggung Jawab (Admin)</label>
-          <input type="text" id="input-pj" required placeholder="Nama petugas / admin..."
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
-        </div>
+          <div id="grup-distributor">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Distributor Mana</label>
+            <input type="text" id="input-distributor" required placeholder="Contoh: PT Sumber Makmur / Agen Jaya"
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
 
-        <button type="submit" id="btn-submit" 
-          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md transition mt-2">
-          Simpan Barang Masuk
+          <div id="grup-pelanggan" class="hidden">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">ID Pelanggan / No. Member</label>
+            <input type="text" id="input-pelanggan" placeholder="Contoh: MBR-0012 / Umum"
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
+            <input type="date" id="input-tanggal" required
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Yang Bertanggung Jawab (Admin)</label>
+            <input type="text" id="input-pj" required placeholder="Nama petugas / admin..."
+              class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <button type="submit" id="btn-submit" 
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md transition mt-2">
+            Simpan Barang Masuk
+          </button>
+        </form>
+      </main>
+
+      <!-- Tab 3: Riwayat Transaksi -->
+      <main id="tab-riwayat" class="p-4 flex-1 hidden space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="font-semibold text-gray-800 text-sm">Riwayat & Stok Terakhir</h2>
+          <select id="filter-jenis" onchange="renderRiwayat()" class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white">
+            <option value="SEMUA">Semua Data</option>
+            <option value="MASUK">Barang Masuk</option>
+            <option value="KELUAR">Barang Keluar</option>
+          </select>
+        </div>
+        <div id="list-riwayat" class="space-y-3">
+          <p class="text-center text-gray-400 text-sm py-8">Memuat riwayat...</p>
+        </div>
+      </main>
+
+      <!-- Navigasi Bawah -->
+      <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 grid grid-cols-3 py-2 text-xs font-medium text-gray-500">
+        <button onclick="bukaTab('stok')" id="nav-stok" class="flex flex-col items-center text-emerald-600 font-bold">
+          <span class="text-lg">📦</span>
+          <span>Stok Terakhir</span>
         </button>
-      </form>
-    </main>
+        <button onclick="bukaTab('form')" id="nav-form" class="flex flex-col items-center">
+          <span class="text-lg">➕</span>
+          <span>Catat Data</span>
+        </button>
+        <button onclick="bukaTab('riwayat')" id="nav-riwayat" class="flex flex-col items-center">
+          <span class="text-lg">📋</span>
+          <span>Riwayat</span>
+        </button>
+      </nav>
+    </div>
 
-    <!-- Tab 3: Riwayat Transaksi -->
-    <main id="tab-riwayat" class="p-4 flex-1 hidden space-y-3">
-      <div class="flex justify-between items-center">
-        <h2 class="font-semibold text-gray-800 text-sm">Riwayat & Stok Terakhir</h2>
-        <select id="filter-jenis" onchange="renderRiwayat()" class="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white">
-          <option value="SEMUA">Semua Data</option>
-          <option value="MASUK">Barang Masuk</option>
-          <option value="KELUAR">Barang Keluar</option>
-        </select>
-      </div>
-      <div id="list-riwayat" class="space-y-3">
-        <p class="text-center text-gray-400 text-sm py-8">Memuat riwayat...</p>
-      </div>
-    </main>
-
-    <!-- Navigasi Bawah -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 grid grid-cols-3 py-2 text-xs font-medium text-gray-500">
-      <button onclick="bukaTab('stok')" id="nav-stok" class="flex flex-col items-center text-emerald-600 font-bold">
-        <span class="text-lg">📦</span>
-        <span>Stok Terakhir</span>
-      </button>
-      <button onclick="bukaTab('form')" id="nav-form" class="flex flex-col items-center">
-        <span class="text-lg">➕</span>
-        <span>Catat Data</span>
-      </button>
-      <button onclick="bukaTab('riwayat')" id="nav-riwayat" class="flex flex-col items-center">
-        <span class="text-lg">📋</span>
-        <span>Riwayat</span>
-      </button>
-    </nav>
   </div>
 
   <script>
-    // ========================================================
-    // TEMPEL PROJECT URL & PUBLISHABLE KEY SUPABASE DI SINI
-    // ========================================================
     const SUPABASE_URL = 'https://mhjmkmcibmseksiqhqdk.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_dswCYxrsRlxnavhsvARqXA_iWfKASzY';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let authMode = 'LOGIN';
+    let currentUser = null;
     let dataBarang = [];
     let dataRiwayat = [];
     let modeSaatIni = 'MASUK';
 
     document.getElementById('input-tanggal').valueAsDate = new Date();
 
+    // ==========================================
+    // LOGIKA AUTENTIKASI MULTI-WARUNG
+    // ==========================================
+    function setAuthMode(mode) {
+      authMode = mode;
+      const tabLogin = document.getElementById('tab-auth-login');
+      const tabReg = document.getElementById('tab-auth-register');
+      const grupWarung = document.getElementById('grup-nama-warung');
+      const inputWarung = document.getElementById('auth-nama-warung');
+      const btnSubmit = document.getElementById('btn-auth-submit');
+
+      if (mode === 'LOGIN') {
+        tabLogin.className = 'py-2 rounded-lg bg-white text-emerald-700 shadow';
+        tabReg.className = 'py-2 rounded-lg text-gray-500';
+        grupWarung.classList.add('hidden');
+        inputWarung.required = false;
+        btnSubmit.innerText = 'Masuk ke Warung';
+      } else {
+        tabReg.className = 'py-2 rounded-lg bg-white text-emerald-700 shadow';
+        tabLogin.className = 'py-2 rounded-lg text-gray-500';
+        grupWarung.classList.remove('hidden');
+        inputWarung.required = true;
+        btnSubmit.innerText = 'Daftarkan Warung Baru';
+      }
+    }
+
+    async function prosesAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const namaWarung = document.getElementById('auth-nama-warung').value.trim();
+      const btn = document.getElementById('btn-auth-submit');
+
+      btn.disabled = true;
+      btn.innerText = 'Memproses...';
+
+      if (authMode === 'REGISTER') {
+        const { data, error } = await db.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { nama_warung: namaWarung }
+          }
+        });
+
+        btn.disabled = false;
+        setAuthMode('REGISTER');
+
+        if (error) {
+          alert('Gagal mendaftar: ' + error.message);
+          return;
+        }
+        alert(`Pendaftaran "${namaWarung}" berhasil! Anda otomatis masuk.`);
+        cekSesiLogin();
+      } else {
+        const { data, error } = await db.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        btn.disabled = false;
+        setAuthMode('LOGIN');
+
+        if (error) {
+          alert('Login gagal: Email atau password salah (' + error.message + ')');
+          return;
+        }
+        cekSesiLogin();
+      }
+    }
+
+    async function cekSesiLogin() {
+      const { data: { session } } = await db.auth.getSession();
+      if (session && session.user) {
+        currentUser = session.user;
+        const namaWarung = currentUser.user_metadata?.nama_warung || 'Stokin';
+        document.getElementById('label-nama-warung').innerText = namaWarung;
+        document.getElementById('label-email-warung').innerText = currentUser.email;
+
+        document.getElementById('view-auth').classList.add('hidden');
+        document.getElementById('view-app').classList.remove('hidden');
+        muatSemuaData();
+      } else {
+        currentUser = null;
+        document.getElementById('view-auth').classList.remove('hidden');
+        document.getElementById('view-app').classList.add('hidden');
+      }
+    }
+
+    async function logoutWarung() {
+      if (!confirm('Keluar dari akun warung ini?')) return;
+      await db.auth.signOut();
+      dataBarang = [];
+      dataRiwayat = [];
+      cekSesiLogin();
+    }
+
+    // ==========================================
+    // LOGIKA INVENTARIS & TRANSAKSI PER WARUNG
+    // ==========================================
     function bukaTab(namaTab) {
       ['stok', 'form', 'riwayat'].forEach(t => {
         document.getElementById('tab-' + t).classList.add('hidden');
@@ -222,10 +388,11 @@
     }
 
     async function muatSemuaData() {
+      if (!currentUser) return;
+
       const { data: barang, error: errB } = await db.from('barang').select('*').order('nama_barang', { ascending: true });
       if (errB) {
         alert('Error memuat stok barang: ' + errB.message);
-        document.getElementById('list-barang').innerHTML = `<p class="text-center text-rose-500 text-xs py-6">Gagal memuat: ${errB.message}</p>`;
         return;
       }
       dataBarang = barang || [];
@@ -235,7 +402,6 @@
       const { data: riwayat, error: errR } = await db.from('transaksi_stok').select('*').order('created_at', { ascending: false });
       if (errR) {
         alert('Error memuat riwayat: ' + errR.message);
-        document.getElementById('list-riwayat').innerHTML = `<p class="text-center text-rose-500 text-xs py-6">Gagal memuat: ${errR.message}</p>`;
         return;
       }
       dataRiwayat = riwayat || [];
@@ -249,7 +415,7 @@
       document.getElementById('stat-unit').innerText = totalUnit;
 
       if (list.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">Belum ada data barang. Silakan input di menu Catat Data.</p>';
+        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">Belum ada data barang di warung ini. Silakan input di menu Catat Data.</p>';
         return;
       }
 
@@ -286,7 +452,7 @@
       const filtered = filter === 'SEMUA' ? dataRiwayat : dataRiwayat.filter(r => r.jenis_transaksi === filter);
 
       if (filtered.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">Belum ada riwayat transaksi.</p>';
+        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">Belum ada riwayat transaksi di warung ini.</p>';
         return;
       }
 
@@ -325,6 +491,8 @@
 
     async function simpanTransaksi(e) {
       e.preventDefault();
+      if (!currentUser) return;
+
       const nama = document.getElementById('input-nama').value.trim();
       const jumlah = parseInt(document.getElementById('input-jumlah').value);
       const satuan = document.getElementById('input-satuan').value;
@@ -338,7 +506,7 @@
 
       if (modeSaatIni === 'KELUAR') {
         if (!barangAda) {
-          alert('Gagal: Barang tidak ditemukan di daftar stok!');
+          alert('Gagal: Barang tidak ditemukan di daftar stok warung ini!');
           return;
         }
         if (barangAda.stok_saat_ini < jumlah) {
@@ -350,7 +518,7 @@
         stokTerakhirSetelahTransaksi = barangAda ? (barangAda.stok_saat_ini + jumlah) : jumlah;
       }
 
-      // 1. Simpan atau Update tabel 'barang'
+      // 1. Simpan atau Update tabel 'barang' milik user_id warung ini
       let resBarang;
       if (barangAda) {
         resBarang = await db.from('barang')
@@ -358,16 +526,17 @@
           .eq('id', barangAda.id);
       } else {
         resBarang = await db.from('barang')
-          .insert([{ nama_barang: nama, stok_saat_ini: stokTerakhirSetelahTransaksi, satuan: satuan }]);
+          .insert([{ user_id: currentUser.id, nama_barang: nama, stok_saat_ini: stokTerakhirSetelahTransaksi, satuan: satuan }]);
       }
 
       if (resBarang.error) {
-        alert('GAGAL menyimpan stok ke database: ' + resBarang.error.message);
+        alert('GAGAL menyimpan stok: ' + resBarang.error.message);
         return;
       }
 
-      // 2. Simpan catatan ke tabel 'transaksi_stok'
+      // 2. Simpan catatan ke tabel 'transaksi_stok' milik user_id warung ini
       const resTransaksi = await db.from('transaksi_stok').insert([{
+        user_id: currentUser.id,
         nama_barang: barangAda ? barangAda.nama_barang : nama,
         jenis_transaksi: modeSaatIni,
         tanggal: tanggal,
@@ -401,12 +570,13 @@
       muatSemuaData();
     }
 
-    muatSemuaData();
+    // Cek apakah warung sudah login saat aplikasi dibuka
+    cekSesiLogin();
   </script>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 </html>
